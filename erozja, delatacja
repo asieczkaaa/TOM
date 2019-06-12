@@ -1,0 +1,61 @@
+import numpy as np
+#import os
+import matplotlib.pyplot as plt
+from scipy import ndimage as nd
+#import imageio as io
+
+def generate_rectangle(x_size, y_size, x_b, y_b, width, height):
+    image = np.zeros((y_size, x_size))
+    image[y_b:y_b + height, x_b:x_b + width] = 1
+    return image
+
+#noise = np.random.randn(512,512)
+
+
+def erosion(image, se):
+	return nd.generic_filter(image, lambda a: np.min(a), footprint=se.T)
+
+
+def dilation(image, se):
+	return nd.generic_filter(image, lambda a: np.max(a), footprint=se.T)
+
+
+def opening(image, se):
+	return dilation(erosion(image, se), se)
+
+
+def closing(image, se):
+	return erosion(dilation(image, se), se)
+
+def run():
+    
+    se = np.ones((15,15))
+    
+    image = generate_rectangle(1024,1024,300,300,300,300)
+    eroted_image = erosion(image, se)
+    dilated_image = dilation(image, se)
+    opened_image = opening(image, se)
+    closed_image = closing(image, se)
+    
+    plt.figure()
+    plt.subplot(1,5,1)
+    plt.imshow(image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,2)
+    plt.imshow(eroted_image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,3)
+    plt.imshow(dilated_image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,4)
+    plt.imshow(opened_image, cmap ='gray')
+    plt.figure()
+    plt.subplot(1,5,5)
+    plt.imshow(closed_image, cmap = 'gray')
+    plt.show()
+    
+    
+    
+    
+if __name__ == "__main__":
+    run()
