@@ -1,0 +1,24 @@
+
+
+def generate_harris_matrix(image, sigma):
+    width, height = image.shape 
+    Ix = ndimage.sobel(image,0)
+    Iy = ndimage.sobel(image,1)
+    Ixx = Ix**2
+    Iyy= Iy**2
+    Ixy = Iy*Ix
+    Iyx = Ix*Iy
+    Ixx = ndimage.filters.gaussian_filter(Ixx, sigma)
+    Iyy = ndimage.filters.gaussian_filter(Iyy, sigma)
+    Ixy = ndimage.filters.gaussian_filter(Ixy, sigma)
+    Iyx = ndimage.filters.gaussian_filter(Ixy, sigma)
+    harris_matrix = np.array([[Ixx,Iyy], [Ixy,Iyx]]) 
+    return harris_matrix
+
+def calculate_harris_response(harris_matrix, threshold, k):
+    trace = np.trace(harris_matrix)
+    harris_matrix = np.swapaxes(harris_matrix,0,2)
+    harris_matrix = np.swapaxes(harris_matrix,1,3)
+    det = np.linalg.det(harris_matrix)
+    response = det - k*(trace**2)
+    return response
