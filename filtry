@@ -1,0 +1,103 @@
+
+import numpy as np
+#import os
+import matplotlib.pyplot as plt
+from scipy import ndimage as nd
+import imageio
+from scipy import signal
+from skimage import color
+
+def normalize(image):
+    normalized_image = (image - np.min(image)) / (np.max(image) - np.min(image))
+    return normalized_image
+
+
+def laplasjan(image):
+    laplasjan = np.array([
+            [0, 1, 0],
+            [1, -4, 1],
+            [0, 1, 1]
+            ])
+    image_laplasjan = signal.convolve2d(image,laplasjan)
+    return image_laplasjan
+
+def median_filter(image, size):
+    image_median = nd.generic_filter(image, np.median, footprint = np.ones((size,size)))
+    return image_median
+
+def average_filter(image, size):
+    mask = np.ones((size, size))
+    avg_image = signal.correlate2d(image, mask)
+    return avg_image
+
+def sobel_filter(image):
+    sobel_mask_x = np.array([
+            [-1, 0, 1],
+            [-2, 0, 2],
+            [-1, 0, 1]
+            ])
+    sobel_mask_y = sobel_mask_x.T
+    sobel_x = signal.convolve2d(image, sobel_mask_x)
+    sobel_y = signal.convolve2d(image, sobel_mask_y)
+    return [sobel_x, sobel_y]
+ 
+def prewitt_filter(image):
+    prewitt_mask_x = np.array([
+            [-1, 0, 1],
+            [-1, 0, 1],
+            [-1, 0, 1]
+            ])
+    prewitt_mask_y = prewitt_mask_x.T
+    prewitt_x = signal.convolve2d(image, prewitt_mask_x)
+    prewitt_y = signal.convolve2d(image, prewitt_mask_y)
+    return [prewitt_x, prewitt_y]
+
+#gauss_image = nd.gaussian_filter(img, sigma = 3)
+
+def gauss_filter(image):
+    gauss = np.array([
+            [1, 2, 1],
+            [2, 4, 2],
+            [1, 2, 1]
+            ])
+    gauss_image = signal.convolve2d(image, gauss)
+    return gauss_image
+
+def gauss_filter_1(size, sigma=1):
+    size = int(size) // 2
+    x, y = np.mgrid[-size:size+1, -size:size+1]
+    normal = 1/ (2.0 *np.pi *sigma**2)
+    g = np.exp(-((x**2 + y**2) / (2.0*sigma**2))) * normal
+    return g
+    
+def run():
+    
+    img = imageio.imread('rose.jpg')
+    image = color.rgb2gray(img)
+    normalized_image = normalize(image)
+    image_laplasjan = laplasjan(image)
+    avg_image = average_filter(image, 3)
+    image_median = median_filter(image, 3)
+    
+    plt.figure()
+    plt.subplot(1,5,1)
+    plt.imshow(image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,2)
+    plt.imshow(normalized_image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,3)
+    plt.imshow(image_laplasjan, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,4)
+    plt.imshow(avg_image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,5)
+    plt.imshow(image_median, cmap = 'gray')
+    plt.show()
+
+    
+if __name__ == "__main__":
+    run()
+    
+    
