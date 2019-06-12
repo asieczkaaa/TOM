@@ -1,0 +1,69 @@
+import numpy as np
+#import os
+import matplotlib.pyplot as plt
+#from scipy import ndimage as nd
+#import imageio as io
+
+
+
+def gradient(image, mode):
+    grad_x = np.zeros(image.shape)
+    grad_y = np.zeros(image.shape)
+    
+    if mode == 'Forward':
+        grad_x[:, 0:-1] = image[:, 1:] - image[:, 0:-1]
+        grad_y[0:-1, :] = image[1:, :] - image[0:-1, :]
+    
+    elif mode == 'Central':
+        grad_x[:, 1:-1] = image[:, 2:] ^ image[:, 0:-2]
+        grad_y[1:-1, :] = image[2:, :] ^ image[0:-2, :] 
+        
+    elif mode == 'Backward':
+        grad_x[:, 1:] = image[:, 1:] - image[:, 0:-1]
+        grad_y[1:, :] = image[1:, :] - image[0:-1, :]
+    else:
+        raise ValueError("Invalid mode.")
+        
+#kąt gradientu
+    gradient_angle = np.arctan2(grad_y, grad_x)
+
+#magnituda
+    gradient_magnitude = np.sqrt(np.square(grad_x) + np.square(grad_y))
+    
+    return [grad_x, grad_y, gradient_magnitude, gradient_angle]
+
+def generate_circle(x_size, y_size, x_origin, y_origin, radius):
+	x_grid, y_grid = np.meshgrid(np.arange(x_size), np.arange(y_size))
+	return np.square(x_grid - x_origin) + np.square(y_grid - y_origin) < radius*radius
+
+
+def main():
+    x_size, y_size = 2048, 2048
+    x_size_circle, y_size_circle, r = 1024, 1024, 500
+    image = generate_circle(x_size, y_size, x_size_circle, y_size_circle, r)
+    
+    
+#    image = np.zeros((2048, 2048))
+#    image[512:1536, 512:1536] = 1
+    
+    grads = gradient(image, 'Central')
+
+    plt.figure()
+    plt.subplot(1,5,1)
+    plt.imshow(image, cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,2)
+    plt.imshow(grads[0], cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,3)
+    plt.imshow(grads[1], cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,4)
+    plt.imshow(grads[2], cmap = 'gray')
+    plt.figure()
+    plt.subplot(1,5,5)
+    plt.imshow(grads[3], cmap = 'gray')
+    plt.show()
+    
+if __name__ == "__main__":
+    main()
