@@ -1,0 +1,61 @@
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import io
+from skimage import color
+
+
+def our_histogram_1(image, bins=100):
+	max_value = image.max()
+	min_value = image.min()
+	step = (max_value-min_value) / bins
+	our_hist = np.zeros(bins)
+	our_bins = np.linspace(min_value, max_value, bins + 1)
+	unique_values, unique_counts = np.unique(image, return_counts=True)
+	for i in range(bins):
+		if i < bins - 1:
+			temp_array = unique_counts[np.logical_and(unique_values >i*step + min_value, unique_values <= (i+1)*step+ min_value) ]
+		else:
+			temp_array = unique_counts[np.logical_and(unique_values >=i*step + min_value, unique_values <= (i+1)*step+ min_value) ]
+		value = np.sum(temp_array)
+		our_hist[i] = value
+	return our_hist, our_bins
+
+
+def our_histogram_2(array, bins=100):
+	max_value = array.max()
+	min_value = array.min()
+	step = (max_value-min_value)/bins
+	hist = np.zeros(bins)
+	xbins = np.linspace(min_value, max_value, bins+1)
+	values, counts = np.unique(array, return_counts=True)
+	for i in range(bins):
+		temp_mask = np.logical_and(values >= i*step, values < (i+1)*step)
+		temp_interval = counts[temp_mask]
+		temp_value = np.sum(temp_interval)
+		hist[i] = temp_value
+	return hist, xbins
+
+def our_histogram_3(signal, bins=100):
+	max_value = np.max(signal)i
+	min_value = np.min(signal)
+	step = (max_value - min_value)/bins
+
+	values, counts = np.unique(signal, return_counts=True)
+	hist = np.zeros(bins)
+	for i in range(bins):
+		indices = np.logical_and(values >= i*step, values < (i+1)*step)
+		temp_value = np.sum(counts[indices])
+		hist[i] = temp_value
+
+	xbins = np.linspace(min_value, max_value, bins+1)
+	return hist, xbins
+
+
+
+def our_histogram_equalization(image, bins=100):
+	hist, bin = our_histogram(image, bins=bins)
+	dys = np.cumsum(hist)
+	dys = dys / np.max(dys)
+	new_image = np.interp(image.ravel(), bin[:-1], dys).reshape(image.shape)
+	return new_image
